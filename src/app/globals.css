@@ -1864,3 +1864,32 @@ html:not([dir="rtl"]) .cta-content h2 { font-weight: 300; }
 html:not([dir="rtl"]) h3,
 html:not([dir="rtl"]) .button,
 html:not([dir="rtl"]) .highlights strong { font-weight: 600; }
+
+/* Desktop navbar proportions from the approved hero reference. */
+@media (min-width: 1151px) {
+  .header {
+    height: clamp(80px, 6.5vw, 125px);
+    padding-inline: 4.4%;
+    gap: 0;
+  }
+  .header .brand { width: 16.4vw; }
+  .header .desktop-nav {
+    flex: 1;
+    justify-content: space-between;
+    margin-inline-start: 6.6vw;
+    gap: 0;
+  }
+  .header .desktop-nav a { font-size: 1vw; }
+  .header .header-end {
+    margin-inline-start: 4.8vw;
+    gap: 2.9vw;
+  }
+  .header .header-quote {
+    width: 14.1vw;
+    min-height: 3.4vw;
+    padding: 1.05vw 1.6vw;
+    font-size: 1vw;
+    gap: 1vw;
+  }
+  .header select { font-size: 1vw; }
+}

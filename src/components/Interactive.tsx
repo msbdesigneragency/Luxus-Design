@@ -280,10 +280,6 @@ export function Hero({ locale }: { locale: Locale }) {
           </div>
         </motion.div>
       </div>
-      <a className="hero-scroll" href="#collections">
-        <span className="mouse" />
-        {t.scroll}
-      </a>
       <p className="hero-meta">
         {t.projectLabel}
         <br />
