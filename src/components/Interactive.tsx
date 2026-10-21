@@ -17,10 +17,12 @@ import {
   Settings2,
   Quote,
   Download,
+  Star,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import { copy, Locale, locales, navPaths, categoryKeys } from "@/lib/i18n";
 import { projects, Project } from "@/data/projects";
+import { referenceContent } from "@/data/reference-content";
 import { quoteSchema } from "@/lib/quote";
 export function Arrow({ circle = false }: { circle?: boolean }) {
   return (
@@ -486,45 +488,78 @@ export function ImageGallery({
     </div>
   );
 }
-export function Highlights({ locale }: { locale: Locale }) {
+export function Highlights({ locale, verified = false }: { locale: Locale; verified?: boolean }) {
   const t = copy[locale];
+  const content = referenceContent[locale];
   const icons = [UserRound, Settings2, Diamond, Truck];
+  const values = ["5+", "100+", "100%", t.highlights[3]];
   return (
-    <div className="highlights section">
-      {icons.map((Icon, i) => (
-        <div key={i}>
-          <Icon size={36} strokeWidth={1} />
-          <p>
-            <strong>{t.highlights[i]}</strong>
-            <span>{t.highlightSubs[i]}</span>
-          </p>
-        </div>
-      ))}
-    </div>
+    <section className="reference-statistics" aria-label={content.statisticsLabel}>
+      <div className="highlights section">
+        {icons.map((Icon, i) => (
+          <div key={i}>
+            <Icon size={36} strokeWidth={1} />
+            <p>
+              <strong className={i < 3 ? "reference-number" : undefined}>{values[i]}</strong>
+              <span>{content.statisticLabels[i]}</span>
+            </p>
+          </div>
+        ))}
+      </div>
+      {!verified && <p className="reference-disclosure section">{content.statisticsNote}</p>}
+    </section>
   );
 }
-export function Testimonials({ locale }: { locale: Locale }) {
+export function Testimonials({ locale, verified = false }: { locale: Locale; verified?: boolean }) {
   const t = copy[locale];
+  const content = referenceContent[locale];
+  const [active, setActive] = useState(0);
+  const reduced = useReducedMotion();
+  const touchStart = useRef<number | null>(null);
+  const move = (direction: number) => setActive(index => (index + direction + content.reviews.length) % content.reviews.length);
+  const ordered = content.reviews.map((_, offset) => content.reviews[(active + offset) % content.reviews.length]);
   return (
-    <section className="section testimonials">
+    <section className="section testimonials reference-testimonials" aria-label={t.reviews}>
       <div className="section-heading">
-        <h2>
-          {t.reviews}
-          <span />
-        </h2>
+        <h2>{t.reviews}<span /></h2>
+        <div className="review-controls">
+          <button type="button" aria-label={content.previous} aria-controls="reference-reviews" onClick={() => move(-1)}><ArrowRight size={18} className="review-previous" /></button>
+          <button type="button" aria-label={content.next} aria-controls="reference-reviews" onClick={() => move(1)}><ArrowRight size={18} /></button>
+        </div>
       </div>
-      <p className="sample-label">{t.sample}</p>
-      <div className="testimonial-grid">
-        {t.reviewTexts.map((text) => (
-          <article key={text}>
-            <Quote size={25} fill="currentColor" />
+      {!verified && <p className="reference-disclosure">{content.reviewNote}</p>}
+      <motion.div
+        id="reference-reviews"
+        className="testimonial-grid reference-review-grid"
+        initial={reduced ? false : { opacity: 0.65 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.25 }}
+        tabIndex={0}
+        role="group"
+        aria-label={`${t.reviews}: ${active + 1} / ${content.reviews.length}`}
+        onKeyDown={event => {
+          if (event.key === "ArrowRight") { event.preventDefault(); move(locale === "ar" ? -1 : 1); }
+          if (event.key === "ArrowLeft") { event.preventDefault(); move(locale === "ar" ? 1 : -1); }
+        }}
+        onTouchStart={event => { touchStart.current = event.touches[0].clientX; }}
+        onTouchEnd={event => {
+          if (touchStart.current === null) return;
+          const distance = touchStart.current - event.changedTouches[0].clientX;
+          if (Math.abs(distance) > 40) move((distance > 0 ? 1 : -1) * (locale === "ar" ? -1 : 1));
+          touchStart.current = null;
+        }}
+      >
+        {ordered.map(review => (
+          <article key={review.attribution}>
+            <Quote size={25} fill="currentColor" aria-hidden="true" />
             <div>
-              <p>{text}</p>
-              <small>{t.reviewLabel}</small>
+              <p>{review.text}</p>
+              <div className="review-stars" role="img" aria-label={content.stars}>{Array.from({ length: 5 }, (_, index) => <Star key={index} size={18} fill="currentColor" strokeWidth={0} />)}</div>
+              <small>{review.attribution}</small>
             </div>
           </article>
         ))}
-      </div>
+      </motion.div>
     </section>
   );
 }

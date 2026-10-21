@@ -19,7 +19,7 @@ Without a webhook, the API returns 503 NOT_CONFIGURED. The UI explicitly says th
 
 Legal and privacy routes exist in all three languages but are clearly marked as drafts. Complete the business identity, hosting, controller contact information and retention policy before public launch. Canonical URLs and sitemap entries are generated once NEXT_PUBLIC_SITE_URL is configured. No unverified structured business data is emitted.
 
-No project locations, numerical claims, customer reviews, phone numbers or social accounts have been invented. The unverified testimonial section is hidden by default. SHOW_SAMPLE_TESTIMONIALS=true enables explicitly labelled editorial samples for internal review only. Classic and Moroccan collection routes display an honest empty state because the supplied originals do not establish those categories. Category photographs for these pending collections are inspiration imagery, not assertions of project classification.
+No project locations, phone numbers or social accounts have been invented. The restored statistics and testimonial sections use the figures and review excerpts visible in the supplied reference. They carry explicit reference-content disclosures until the business confirms their accuracy. Set REFERENCE_CLAIMS_VERIFIED=true only after confirmation to remove those disclosures. Classic and Moroccan collection routes display an honest empty state because the supplied originals do not establish those categories. Category photographs for these pending collections are inspiration imagery, not assertions of project classification.
 
 ## Assets
 

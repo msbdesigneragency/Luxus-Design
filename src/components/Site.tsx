@@ -160,11 +160,9 @@ export function Home({ locale }: { locale: Locale }) {
       <Categories locale={locale} />
       <CustomServices locale={locale} />
       <ProjectGallery locale={locale} />
-      <Highlights locale={locale} />
+      <Highlights locale={locale} verified={process.env.REFERENCE_CLAIMS_VERIFIED === "true"} />
       <ProjectCTA locale={locale} />
-      {process.env.SHOW_SAMPLE_TESTIMONIALS === "true" && (
-        <Testimonials locale={locale} />
-      )}
+      <Testimonials locale={locale} verified={process.env.REFERENCE_CLAIMS_VERIFIED === "true"} />
       <InstagramStrip
         locale={locale}
         profile={process.env.NEXT_PUBLIC_INSTAGRAM_URL}
