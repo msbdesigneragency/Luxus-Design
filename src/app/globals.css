@@ -10,8 +10,25 @@
   box-sizing: border-box;
 }
 html {
+  view-transition-name: none;
   scroll-behavior: smooth;
   scroll-padding-top: 90px;
+}
+main { view-transition-name: page-content; background: var(--paper); }
+.header { view-transition-name: site-navbar; }
+::view-transition-group(page-content) { animation: none; z-index: 1; }
+::view-transition-group(site-navbar) { animation: none; z-index: 2; }
+::view-transition-old(site-navbar) { animation: none; }
+::view-transition-new(site-navbar) { animation: page-content-in 240ms ease-out both; }
+::view-transition-old(page-content), ::view-transition-new(page-content) {
+  height: auto;
+  mix-blend-mode: normal;
+}
+::view-transition-old(page-content) { animation: none; opacity: 1; }
+::view-transition-new(page-content) { animation: page-content-in 240ms ease-out both; }
+@keyframes page-content-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(page-content), ::view-transition-new(page-content) { animation: none; }
 }
 body {
   margin: 0;
