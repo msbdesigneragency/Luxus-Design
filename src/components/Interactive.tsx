@@ -490,6 +490,7 @@ export function ImageGallery({
 }
 export function Highlights({ locale, verified = false }: { locale: Locale; verified?: boolean }) {
   const t = copy[locale];
+  const reduced = useReducedMotion();
   const content = referenceContent[locale];
   const icons = [UserRound, Settings2, Diamond, Truck];
   const values = ["5+", "100+", "100%", t.highlights[3]];
@@ -497,13 +498,19 @@ export function Highlights({ locale, verified = false }: { locale: Locale; verif
     <section className="reference-statistics" aria-label={content.statisticsLabel}>
       <div className="highlights section">
         {icons.map((Icon, i) => (
-          <div key={i}>
+          <motion.div
+            key={i}
+            initial={false}
+            whileInView={reduced ? {} : { opacity: [0, 1], y: [20, 0] }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.65, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+          >
             <Icon size={36} strokeWidth={1} />
             <p>
               <strong className={i < 3 ? "reference-number" : undefined}>{values[i]}</strong>
               <span>{content.statisticLabels[i]}</span>
             </p>
-          </div>
+          </motion.div>
         ))}
       </div>
       {!verified && <p className="reference-disclosure section">{content.statisticsNote}</p>}
@@ -520,13 +527,19 @@ export function Testimonials({ locale, verified = false }: { locale: Locale; ver
   const ordered = content.reviews.map((_, offset) => content.reviews[(active + offset) % content.reviews.length]);
   return (
     <section className="section testimonials reference-testimonials" aria-label={t.reviews}>
-      <div className="section-heading">
+      <motion.div
+        className="section-heading"
+        initial={false}
+        whileInView={reduced ? {} : { opacity: [0, 1], y: [16, 0] }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+      >
         <h2>{t.reviews}<span /></h2>
         <div className="review-controls">
           <button type="button" aria-label={content.previous} aria-controls="reference-reviews" onClick={() => move(-1)}><ArrowRight size={18} className="review-previous" /></button>
           <button type="button" aria-label={content.next} aria-controls="reference-reviews" onClick={() => move(1)}><ArrowRight size={18} /></button>
         </div>
-      </div>
+      </motion.div>
       {!verified && <p className="reference-disclosure">{content.reviewNote}</p>}
       <motion.div
         id="reference-reviews"
@@ -549,15 +562,21 @@ export function Testimonials({ locale, verified = false }: { locale: Locale; ver
           touchStart.current = null;
         }}
       >
-        {ordered.map(review => (
-          <article key={review.attribution}>
+        {ordered.map((review, index) => (
+          <motion.article
+            key={`${active}-${review.attribution}`}
+            initial={false}
+            whileInView={reduced ? {} : { opacity: [0, 1], y: [22, 0] }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
+          >
             <Quote size={25} fill="currentColor" aria-hidden="true" />
             <div>
               <p>{review.text}</p>
               <div className="review-stars" role="img" aria-label={content.stars}>{Array.from({ length: 5 }, (_, index) => <Star key={index} size={18} fill="currentColor" strokeWidth={0} />)}</div>
               <small>{review.attribution}</small>
             </div>
-          </article>
+          </motion.article>
         ))}
       </motion.div>
     </section>
