@@ -6,7 +6,6 @@ import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowRight,
   ArrowUpRight,
-  Menu,
   X,
   ChevronLeft,
   ChevronRight,
@@ -227,9 +226,9 @@ export function Header({ locale }: { locale: Locale }) {
             aria-label={t.menu}
             aria-expanded={open}
             aria-controls="mobile-nav"
-            onClick={() => setOpen(true)}
+            onClick={() => setOpen(value => !value)}
           >
-            <Menu />
+            <span className="hamburger" aria-hidden="true"><span /><span /><span /></span>
           </button>
         </div>
       </header>
@@ -266,7 +265,7 @@ export function Header({ locale }: { locale: Locale }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <Link href={`/${locale}/${p}`} scroll={false} onNavigate={event => { event.preventDefault(); navigatePage(`/${locale}${p ? "/" + p : ""}`); }} onClick={event => { setOpen(false); if (i === 0) returnHome(event); }}>
+                <Link className={pathname === `/${locale}${p ? "/" + p : ""}` ? "active" : ""} href={`/${locale}/${p}`} scroll={false} onNavigate={event => { event.preventDefault(); navigatePage(`/${locale}${p ? "/" + p : ""}`); }} onClick={event => { setOpen(false); if (i === 0) returnHome(event); }}>
                   <small>0{i + 1}</small>
                   {t.nav[i]}
                   <ArrowUpRight />
