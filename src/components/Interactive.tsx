@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
@@ -91,6 +91,10 @@ export function Header({ locale }: { locale: Locale }) {
   const menuRef = useRef<HTMLDivElement>(null),
     toggle = useRef<HTMLButtonElement>(null);
   const home = pathname === `/${locale}`;
+  useLayoutEffect(() => {
+    // Catch-all routes share a page shell, so Next can retain its old scroll offset.
+    if (!window.location.hash) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [pathname]);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 35);
     fn();

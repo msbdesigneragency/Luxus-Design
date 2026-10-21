@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { copy, Locale, locales, navPaths, servicePaths } from "@/lib/i18n";
 import { projects } from "@/data/projects";
+import { about } from "@/data/about";
 import { Footer, Home, ProjectCTA, CustomServices } from "@/components/Site";
 import {
   Header,
@@ -153,7 +154,7 @@ export default async function Page({ params }: Props) {
           </div>
           <div className="editorial-photo">
             <Image
-              src="/images/project-6.webp"
+              src={route === "a-propos" ? "/images/hero-main.webp" : "/images/project-6.webp"}
               alt={t.categoryNames[0]}
               fill
               priority
@@ -162,18 +163,18 @@ export default async function Page({ params }: Props) {
           </div>
         </section>
         <section className="section process">
-          <h2>{t.processTitle}</h2>
+          <h2>{route === "a-propos" ? about[l].title : t.processTitle}</h2>
           <div className="process-grid">
-            {t.steps.map((step, i) => (
+            {(route === "a-propos" ? about[l].items.map(item => item.title) : t.steps).map((step, i) => (
               <article key={step}>
                 <span>0{i + 1}</span>
                 <h3>{step}</h3>
-                <p>{t.stepTexts[i]}</p>
+                <p>{route === "a-propos" ? about[l].items[i].text : t.stepTexts[i]}</p>
               </article>
             ))}
           </div>
         </section>
-        <CustomServices locale={l} />
+        {route !== "a-propos" && <CustomServices locale={l} />}
         <ProjectCTA locale={l} />
       </>
     );
