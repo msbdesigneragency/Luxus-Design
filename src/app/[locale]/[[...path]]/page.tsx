@@ -258,9 +258,31 @@ export default async function Page({ params }: Props) {
       </section>
     );
   else notFound();
+  const heroImages: Record<string, string> = {
+    salons: "/images/hero-main.webp",
+    "sur-mesure": "/images/project-6.webp",
+    realisations: "/images/project-1.webp",
+    "a-propos": "/images/hero-main.webp",
+    contact: "/images/project-1.webp",
+  };
+  const heroImage = path.length === 1 ? heroImages[route] : undefined;
+  const heroTitle = t.nav[navPaths.indexOf(route)];
   return (
     <>
-      <NavigationTransition className={path.length ? "inner-page" : ""}>
+      <NavigationTransition className={heroImage ? "inner-page has-route-hero" : path.length ? "inner-page" : ""}>
+        {heroImage && (
+          <section className="hero route-hero" aria-label={heroTitle}>
+            <div className="hero-photo">
+              <Image src={heroImage} alt={heroTitle} fill priority sizes="100vw" quality={90} />
+            </div>
+            <div className="hero-shade" />
+            <div className="hero-content">
+              <p className="eyebrow">LUXUS DESIGN</p>
+              <h2 className="route-hero-title">{heroTitle}</h2>
+              <p className="hero-intro">{route === "salons" || route === "realisations" ? t.catalogIntro : route === "sur-mesure" ? t.customText : route === "a-propos" ? t.aboutText : t.formIntro}</p>
+            </div>
+          </section>
+        )}
         {content}
       </NavigationTransition>
       <Footer locale={l} />
