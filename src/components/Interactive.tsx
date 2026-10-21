@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
@@ -19,8 +19,7 @@ import {
   Download,
   Star,
 } from "lucide-react";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
-import { homeSections, useExperience } from "./useExperience";
+import { motion, useReducedMotion } from "framer-motion";
 import { copy, Locale, locales, navPaths, categoryKeys } from "@/lib/i18n";
 import { projects, Project } from "@/data/projects";
 import { referenceContent } from "@/data/reference-content";
@@ -51,20 +50,18 @@ export function Button({
 export function Reveal({
   children,
   className = "",
-  delay = 0,
 }: {
   children: ReactNode;
   className?: string;
-  delay?: number;
 }) {
   const reduced = useReducedMotion();
   return (
     <motion.div
       className={className}
-      initial={false}
-      whileInView={reduced ? {} : { opacity: [0.5, 1], y: [18, 0] }}
+      initial={{ opacity: 1, y: 0 }}
+      whileInView={reduced ? {} : { opacity: [0.65, 1], y: [14, 0] }}
       viewport={{ once: true, amount: 0.12 }}
-      transition={{ duration: 0.7, delay: reduced ? 0 : delay, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
     >
       {children}
     </motion.div>
@@ -94,8 +91,16 @@ export function Header({ locale }: { locale: Locale }) {
   const menuRef = useRef<HTMLDivElement>(null),
     toggle = useRef<HTMLButtonElement>(null);
   const home = pathname === `/${locale}`;
-  const { header, active } = useExperience(pathname, home, reduced);
-  const sectionHref = (i: number) => `${home ? "" : `/${locale}`}#${homeSections[i]}`;
+  useLayoutEffect(() => {
+    // Catch-all routes share a page shell, so Next can retain its old scroll offset.
+    if (window.location.hash) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    // Finish after Next's own post-commit scroll handling, including smooth scrolling.
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 35);
     fn();
@@ -139,7 +144,7 @@ export function Header({ locale }: { locale: Locale }) {
     const parts = pathname.split("/");
     parts[1] = value;
     window.location.href =
-      parts.join("/") + (search.toString() ? `?${search}` : "") + window.location.hash;
+      parts.join("/") + (search.toString() ? `?${search}` : "");
   };
   const languages = (
     <select
@@ -159,25 +164,23 @@ export function Header({ locale }: { locale: Locale }) {
       <a href="#main" className="skip-link">
         {t.skip}
       </a>
-      <header ref={header} className={`header ${!home || scrolled ? "solid" : ""}`}>
-        <a href={sectionHref(0)} aria-label="LUXUS DESIGN">
+      <header className={`header ${!home || scrolled ? "solid" : ""}`}>
+        <Link href={`/${locale}`} aria-label="LUXUS DESIGN">
           <Brand />
-        </a>
-        <LayoutGroup id={`navbar-${locale}`}><nav className="desktop-nav" aria-label={t.navigation}>
+        </Link>
+        <nav className="desktop-nav" aria-label={t.navigation}>
           {navPaths.map((p, i) => (
-            <a
+            <Link
               key={p}
               className={
-                (home ? active === homeSections[i] : pathname === `/${locale}/${p}`) ? "active" : ""
+                pathname === `/${locale}${p ? "/" + p : ""}` ? "active" : ""
               }
-              aria-current={(home ? active === homeSections[i] : pathname === `/${locale}/${p}`) ? "location" : undefined}
-              href={sectionHref(i)}
+              href={`/${locale}/${p}`}
             >
               {t.nav[i]}
-              {(home ? active === homeSections[i] : pathname === `/${locale}/${p}`) && <motion.span className="nav-active-line" layoutId="active-nav" transition={{ duration: reduced ? 0 : 0.28, ease: [0.22, 1, 0.36, 1] }} />}
-            </a>
+            </Link>
           ))}
-        </nav></LayoutGroup>
+        </nav>
         <div className="header-end">
           <Link className="header-quote" href={`/${locale}/contact`}>
             {t.quote}
@@ -196,12 +199,8 @@ export function Header({ locale }: { locale: Locale }) {
           </button>
         </div>
       </header>
-      <AnimatePresence>{open && (
-        <motion.div
-          initial={reduced ? false : { opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={reduced ? { opacity: 1 } : { opacity: 0, y: -8, pointerEvents: "none" }}
-          transition={{ duration: reduced ? 0 : 0.22 }}
+      {open && (
+        <div
           className="mobile-menu"
           role="dialog"
           aria-modal="true"
@@ -229,11 +228,11 @@ export function Header({ locale }: { locale: Locale }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <a href={sectionHref(i)} onClick={() => { setOpen(false); toggle.current?.focus(); }} aria-current={home && active === homeSections[i] ? "location" : undefined}>
+                <Link href={`/${locale}/${p}`} onClick={() => setOpen(false)}>
                   <small>0{i + 1}</small>
                   {t.nav[i]}
                   <ArrowUpRight />
-                </a>
+                </Link>
               </motion.div>
             ))}
           </nav>
@@ -246,8 +245,8 @@ export function Header({ locale }: { locale: Locale }) {
             {t.quote}
             <ArrowRight size={18} />
           </Link>
-        </motion.div>
-      )}</AnimatePresence>
+        </div>
+      )}
     </>
   );
 }
@@ -255,7 +254,7 @@ export function Hero({ locale }: { locale: Locale }) {
   const t = copy[locale],
     reduced = useReducedMotion();
   return (
-    <section id="accueil" className="hero">
+    <section className="hero">
       <motion.div
         className="hero-photo"
         initial={reduced ? false : { scale: 1.035 }}
@@ -286,7 +285,7 @@ export function Hero({ locale }: { locale: Locale }) {
           </h1>
           <p className="hero-intro">{t.intro}</p>
           <div className="button-row">
-            <Button href="#realisations">{t.discover}</Button>
+            <Button href={`/${locale}/realisations`}>{t.discover}</Button>
             <Button outline href={`/${locale}/contact`}>
               {t.ask}
             </Button>
@@ -306,26 +305,17 @@ export function Hero({ locale }: { locale: Locale }) {
     </section>
   );
 }
-const MotionLink = motion.create(Link);
 export function ProjectCard({
   project,
   locale,
-  index = 0,
 }: {
   project: Project;
   locale: Locale;
-  index?: number;
 }) {
-  const reduced = useReducedMotion();
   return (
-    <MotionLink
+    <Link
       href={`/${locale}/realisations/${project.slug}`}
       className="image-card project-card"
-      layout={reduced ? false : "position"}
-      initial={false}
-      whileInView={reduced ? {} : { opacity: [0.5, 1], y: [18, 0] }}
-      viewport={{ once: true, amount: 0.12 }}
-      transition={{ duration: reduced ? 0 : 0.7, delay: reduced ? 0 : Math.min(index, 3) * 0.08, ease: [0.22, 1, 0.36, 1], layout: { duration: 0.3, delay: 0 } }}
     >
       <div className="card-photo">
         <Image
@@ -342,7 +332,7 @@ export function ProjectCard({
         </div>
         <Arrow circle />
       </div>
-    </MotionLink>
+    </Link>
   );
 }
 export function ProjectGallery({
@@ -367,7 +357,7 @@ export function ProjectGallery({
   );
   const shown = full ? matched : matched.slice(0, 5);
   return (
-    <section id="realisations" className="section projects-section">
+    <section className="section projects-section">
       <div className="section-heading">
         <h2>
           {full ? t.nav[3] : t.latest}
@@ -380,7 +370,7 @@ export function ProjectGallery({
               aria-pressed={filter === key}
               className={filter === key ? "selected" : ""}
               onClick={() =>
-                router.replace(`?categorie=${key}${window.location.hash}`, { scroll: false })
+                router.replace(`?categorie=${key}`, { scroll: false })
               }
             >
               {label}
@@ -389,13 +379,14 @@ export function ProjectGallery({
         </div>
       </div>
       {shown.length ? (
-        <div
+        <Reveal
+          key={filter}
           className={`project-grid ${full ? "catalog-grid" : ""} ${shown.length < 5 ? "compact-grid" : ""}`}
         >
-          {shown.map((p, index) => (
-            <ProjectCard project={p} locale={locale} key={p.slug} index={index} />
+          {shown.map((p) => (
+            <ProjectCard project={p} locale={locale} key={p.slug} />
           ))}
-        </div>
+        </Reveal>
       ) : (
         <p className="empty-state">{t.noCategory}</p>
       )}
@@ -437,8 +428,8 @@ export function CategoryCollection({ locale }: { locale: Locale }) {
       <section className="section">
         {selected.length ? (
           <div className="catalog-grid project-grid">
-            {selected.map((p, index) => (
-              <ProjectCard key={p.slug} project={p} locale={locale} index={index} />
+            {selected.map((p) => (
+              <ProjectCard key={p.slug} project={p} locale={locale} />
             ))}
           </div>
         ) : (
@@ -461,7 +452,6 @@ export function ImageGallery({
   locale: Locale;
 }) {
   const [index, setIndex] = useState(0);
-  const reduced = useReducedMotion();
   const t = copy[locale];
   return (
     <div
@@ -470,11 +460,12 @@ export function ImageGallery({
       aria-label={t.gallery}
       tabIndex={images.length > 1 ? 0 : undefined}
       onKeyDown={(e) => {
-        if (e.key === "ArrowRight") { e.preventDefault(); setIndex((i) => (i + (locale === "ar" ? -1 : 1) + images.length) % images.length); }
-        if (e.key === "ArrowLeft") { e.preventDefault(); setIndex((i) => (i + (locale === "ar" ? 1 : -1) + images.length) % images.length); }
+        if (e.key === "ArrowRight") setIndex((i) => (i + 1) % images.length);
+        if (e.key === "ArrowLeft")
+          setIndex((i) => (i - 1 + images.length) % images.length);
       }}
     >
-      <motion.div className="detail-photo" key={index} initial={false} animate={reduced ? {} : { opacity: [0.7, 1] }} transition={{ duration: 0.3 }}>
+      <div className="detail-photo">
         <Image
           src={images[index]}
           alt={`${title} Â· ${index + 1}`}
@@ -482,7 +473,7 @@ export function ImageGallery({
           priority
           sizes="(max-width:768px) 100vw, 90vw"
         />
-      </motion.div>
+      </div>
       {images.length > 1 && (
         <div className="gallery-controls">
           <button
@@ -514,7 +505,7 @@ export function Highlights({ locale, verified = false }: { locale: Locale; verif
   const icons = [UserRound, Settings2, Diamond, Truck];
   const values = ["5+", "100+", "100%", t.highlights[3]];
   return (
-    <section id="a-propos" className="reference-statistics" aria-label={content.statisticsLabel}>
+    <section className="reference-statistics" aria-label={content.statisticsLabel}>
       <div className="highlights section">
         {icons.map((Icon, i) => (
           <motion.div
@@ -545,7 +536,7 @@ export function Testimonials({ locale, verified = false }: { locale: Locale; ver
   const move = (direction: number) => setActive(index => (index + direction + content.reviews.length) % content.reviews.length);
   const ordered = content.reviews.map((_, offset) => content.reviews[(active + offset) % content.reviews.length]);
   return (
-    <section id="temoignages" className="section testimonials reference-testimonials" aria-label={t.reviews}>
+    <section className="section testimonials reference-testimonials" aria-label={t.reviews}>
       <motion.div
         className="section-heading"
         initial={false}
@@ -610,7 +601,7 @@ export function InstagramStrip({
 }) {
   const t = copy[locale];
   return (
-    <section id="instagram" className="section instagram-section">
+    <section className="section instagram-section">
       <div className="section-heading">
         <h2>
           {t.instagram}
