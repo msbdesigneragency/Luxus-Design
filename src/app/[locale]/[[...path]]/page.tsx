@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { copy, Locale, locales, navPaths, servicePaths } from "@/lib/i18n";
 import { projects } from "@/data/projects";
+import { NavigationTransition } from "@/components/NavigationTransition";
 import { about } from "@/data/about";
 import { Footer, Home, ProjectCTA, CustomServices } from "@/components/Site";
 import {
@@ -261,9 +262,9 @@ export default async function Page({ params }: Props) {
   return (
     <>
       <Header locale={l} />
-      <main id="main" className={path.length ? "inner-page" : ""}>
+      <NavigationTransition className={path.length ? "inner-page" : ""}>
         {content}
-      </main>
+      </NavigationTransition>
       <Footer locale={l} />
     </>
   );
