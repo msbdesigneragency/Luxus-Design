@@ -93,7 +93,13 @@ export function Header({ locale }: { locale: Locale }) {
   const home = pathname === `/${locale}`;
   useLayoutEffect(() => {
     // Catch-all routes share a page shell, so Next can retain its old scroll offset.
-    if (!window.location.hash) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    if (window.location.hash) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    // Finish after Next's own post-commit scroll handling, including smooth scrolling.
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
+    });
+    return () => cancelAnimationFrame(frame);
   }, [pathname]);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 35);
