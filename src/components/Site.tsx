@@ -55,7 +55,7 @@ export function Categories({ locale }: { locale: Locale }) {
       />
       <div className="category-grid">
         {t.categoryNames.map((name, i) => (
-          <Reveal key={name}>
+          <Reveal key={name} delay={i * 0.08}>
             <Link
               className="image-card category-card"
               href={`/${locale}/salons?categorie=${categoryKeys[i]}`}
@@ -94,7 +94,7 @@ export function Categories({ locale }: { locale: Locale }) {
 export function CustomServices({ locale }: { locale: Locale }) {
   const t = copy[locale];
   return (
-    <section className="custom-services">
+    <section id="sur-mesure" className="custom-services">
       <div className="custom-panel">
         <h2>
           {t.custom[0]}
@@ -132,7 +132,7 @@ export function CustomServices({ locale }: { locale: Locale }) {
 export function ProjectCTA({ locale }: { locale: Locale }) {
   const t = copy[locale];
   return (
-    <section className="project-cta">
+    <section id="contact" className="project-cta">
       <Image
         src="/images/project-cta.webp"
         alt={t.categoryNames[3]}
