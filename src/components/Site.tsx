@@ -134,7 +134,7 @@ export function ProjectCTA({ locale }: { locale: Locale }) {
   return (
     <section className="project-cta">
       <Image
-        src="/images/hero-main.webp"
+        src="/images/project-cta.webp"
         alt={t.categoryNames[3]}
         fill
         sizes="100vw"
