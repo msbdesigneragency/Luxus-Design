@@ -97,7 +97,7 @@ export function Header({ locale }: { locale: Locale }) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
     if (home) window.scrollTo({ top: 0, left: 0, behavior: reduced ? "instant" : "smooth" });
-    else router.push(`/${locale}`);
+    else router.push(`/${locale}`, { scroll: false });
   };
   useEffect(() => {
     const restore = () => { restoring.current = true; };
@@ -106,14 +106,9 @@ export function Header({ locale }: { locale: Locale }) {
   }, []);
   useLayoutEffect(() => {
     if (restoring.current) { restoring.current = false; return; }
-    // Catch-all routes share a page shell, so Next can retain its old scroll offset.
+    // Navbar navigation opts out of Next's scrolling; reset once before paint.
     if (window.location.hash) return;
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    // Finish after Next's own post-commit scroll handling, including smooth scrolling.
-    let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: "instant" }));
-    });
-    return () => cancelAnimationFrame(frame);
   }, [pathname]);
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 35);
@@ -179,7 +174,7 @@ export function Header({ locale }: { locale: Locale }) {
         {t.skip}
       </a>
       <header className={`header ${!home || scrolled ? "solid" : ""}`}>
-        <Link href={`/${locale}`} aria-label="LUXUS DESIGN" onClick={returnHome}>
+        <Link href={`/${locale}`} aria-label="LUXUS DESIGN" onClick={returnHome} scroll={false}>
           <Brand />
         </Link>
         <LayoutGroup id={`navigation-${locale}`}><nav className="desktop-nav" aria-label={t.navigation}>
@@ -190,6 +185,7 @@ export function Header({ locale }: { locale: Locale }) {
                 pathname === `/${locale}${p ? "/" + p : ""}` ? "active" : ""
               }
               href={`/${locale}/${p}`}
+              scroll={false}
               onClick={i === 0 ? returnHome : undefined}
             >
               {t.nav[i]}
@@ -198,7 +194,7 @@ export function Header({ locale }: { locale: Locale }) {
           ))}
         </nav></LayoutGroup>
         <div className="header-end">
-          <Link className="header-quote" href={`/${locale}/contact`}>
+          <Link className="header-quote" href={`/${locale}/contact`} scroll={false}>
             {t.quote}
             <ArrowRight size={15} />
           </Link>
@@ -248,7 +244,7 @@ export function Header({ locale }: { locale: Locale }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <Link href={`/${locale}/${p}`} onClick={event => { setOpen(false); if (i === 0) returnHome(event); }}>
+                <Link href={`/${locale}/${p}`} scroll={false} onClick={event => { setOpen(false); if (i === 0) returnHome(event); }}>
                   <small>0{i + 1}</small>
                   {t.nav[i]}
                   <ArrowUpRight />
@@ -260,6 +256,7 @@ export function Header({ locale }: { locale: Locale }) {
           <Link
             className="button"
             href={`/${locale}/contact`}
+            scroll={false}
             onClick={() => setOpen(false)}
           >
             {t.quote}
@@ -293,9 +290,8 @@ export function Hero({ locale }: { locale: Locale }) {
       <div className="hero-shade" />
       <div className="hero-content">
         <motion.div
-          initial={reduced ? false : { opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.12 }}
+          initial={false}
+          animate={{ opacity: 1 }}
         >
           <p className="eyebrow">{t.eyebrow}</p>
           <h1>
@@ -355,6 +351,21 @@ export function ProjectCard({
     </Link>
   );
 }
+function useStationaryFilter() {
+  const results = useRef<HTMLElement | null>(null);
+  const [minimumHeight, setMinimumHeight] = useState<number>();
+  const select = (category: string | null) => {
+    const height = results.current?.getBoundingClientRect().height || 0;
+    setMinimumHeight(previous => Math.max(previous || 0, height));
+    const url = new URL(window.location.href);
+    if (category && category !== "all") url.searchParams.set("categorie", category);
+    else url.searchParams.delete("categorie");
+    // Native history integrates with useSearchParams without triggering route scrolling.
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+  };
+  const bindResults = (element: HTMLElement | null) => { results.current = element; };
+  return { bindResults, minimumHeight, select };
+}
 export function ProjectGallery({
   locale,
   full = false,
@@ -364,8 +375,8 @@ export function ProjectGallery({
 }) {
   const t = copy[locale],
     params = useSearchParams(),
-    router = useRouter(),
     filter = params.get("categorie") || "all";
+  const { bindResults, minimumHeight, select } = useStationaryFilter();
   const options = [
     ["all", t.all],
     ["modernes", t.filters[0]],
@@ -389,31 +400,31 @@ export function ProjectGallery({
               key={key}
               aria-pressed={filter === key}
               className={filter === key ? "selected" : ""}
-              onClick={() =>
-                router.replace(`?categorie=${key}`, { scroll: false })
-              }
+              onClick={() => select(key)}
             >
               {label}
             </button>
           ))}
         </div>
       </div>
+      <div ref={bindResults} style={{ minHeight: minimumHeight, overflowAnchor: "none" }}>
       {shown.length ? (
-        <Reveal
-          key={filter}
+        <div
           className={`project-grid ${full ? "catalog-grid" : ""} ${shown.length < 5 ? "compact-grid" : ""}`}
         >
           {shown.map((p) => (
             <ProjectCard project={p} locale={locale} key={p.slug} />
           ))}
-        </Reveal>
+        </div>
       ) : (
         <p className="empty-state">{t.noCategory}</p>
       )}
+      </div>
     </section>
   );
 }
 export function CategoryCollection({ locale }: { locale: Locale }) {
+  const { bindResults, minimumHeight, select } = useStationaryFilter();
   const t = copy[locale],
     params = useSearchParams(),
     category = params.get("categorie"),
@@ -431,6 +442,8 @@ export function CategoryCollection({ locale }: { locale: Locale }) {
           <Link
             className={!category ? "selected" : ""}
             href={`/${locale}/salons`}
+            scroll={false}
+            onClick={event => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); select(null); }}
           >
             {t.all}
           </Link>
@@ -439,13 +452,15 @@ export function CategoryCollection({ locale }: { locale: Locale }) {
               key={name}
               className={category === categoryKeys[i] ? "selected" : ""}
               href={`/${locale}/salons?categorie=${categoryKeys[i]}`}
+              scroll={false}
+              onClick={event => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); select(categoryKeys[i]); }}
             >
               {name}
             </Link>
           ))}
         </div>
       </section>
-      <section className="section">
+      <section ref={bindResults} className="section" style={{ minHeight: minimumHeight, overflowAnchor: "none" }}>
         {selected.length ? (
           <div className="catalog-grid project-grid">
             {selected.map((p) => (
