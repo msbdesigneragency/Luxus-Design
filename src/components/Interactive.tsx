@@ -91,6 +91,12 @@ export function Header({ locale }: { locale: Locale }) {
   const menuRef = useRef<HTMLDivElement>(null),
     toggle = useRef<HTMLButtonElement>(null);
   const home = pathname === `/${locale}`;
+  const returnHome = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    event.preventDefault();
+    if (home) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    else window.location.assign(`/${locale}`);
+  };
   useLayoutEffect(() => {
     // Catch-all routes share a page shell, so Next can retain its old scroll offset.
     if (window.location.hash) return;
@@ -165,7 +171,7 @@ export function Header({ locale }: { locale: Locale }) {
         {t.skip}
       </a>
       <header className={`header ${!home || scrolled ? "solid" : ""}`}>
-        <Link href={`/${locale}`} aria-label="LUXUS DESIGN">
+        <Link href={`/${locale}`} aria-label="LUXUS DESIGN" onClick={returnHome}>
           <Brand />
         </Link>
         <nav className="desktop-nav" aria-label={t.navigation}>
@@ -176,6 +182,7 @@ export function Header({ locale }: { locale: Locale }) {
                 pathname === `/${locale}${p ? "/" + p : ""}` ? "active" : ""
               }
               href={`/${locale}/${p}`}
+              onClick={i === 0 ? returnHome : undefined}
             >
               {t.nav[i]}
             </Link>
@@ -228,7 +235,7 @@ export function Header({ locale }: { locale: Locale }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <Link href={`/${locale}/${p}`} onClick={() => setOpen(false)}>
+                <Link href={`/${locale}/${p}`} onClick={event => { setOpen(false); if (i === 0) returnHome(event); }}>
                   <small>0{i + 1}</small>
                   {t.nav[i]}
                   <ArrowUpRight />
