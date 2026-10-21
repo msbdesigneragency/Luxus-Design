@@ -159,6 +159,15 @@ img {
 .desktop-nav a:hover:after {
   width: 100%;
 }
+.desktop-nav a.active:after { opacity: 0; }
+.nav-active-indicator {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 6px;
+  height: 1px;
+  background: currentColor;
+  pointer-events: none;
+}
 .header-end {
   display: flex;
   align-items: center;

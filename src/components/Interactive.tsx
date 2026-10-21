@@ -19,7 +19,7 @@ import {
   Download,
   Star,
 } from "lucide-react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import { copy, Locale, locales, navPaths, categoryKeys } from "@/lib/i18n";
 import { projects, Project } from "@/data/projects";
 import { referenceContent } from "@/data/reference-content";
@@ -83,6 +83,8 @@ export function Brand({ footer = false }: { footer?: boolean }) {
 }
 export function Header({ locale }: { locale: Locale }) {
   const reduced = useReducedMotion();
+  const router = useRouter();
+  const restoring = useRef(false);
   const t = copy[locale],
     pathname = usePathname(),
     search = useSearchParams();
@@ -94,10 +96,16 @@ export function Header({ locale }: { locale: Locale }) {
   const returnHome = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    if (home) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-    else window.location.assign(`/${locale}`);
+    if (home) window.scrollTo({ top: 0, left: 0, behavior: reduced ? "instant" : "smooth" });
+    else router.push(`/${locale}`);
   };
+  useEffect(() => {
+    const restore = () => { restoring.current = true; };
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, []);
   useLayoutEffect(() => {
+    if (restoring.current) { restoring.current = false; return; }
     // Catch-all routes share a page shell, so Next can retain its old scroll offset.
     if (window.location.hash) return;
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
@@ -174,7 +182,7 @@ export function Header({ locale }: { locale: Locale }) {
         <Link href={`/${locale}`} aria-label="LUXUS DESIGN" onClick={returnHome}>
           <Brand />
         </Link>
-        <nav className="desktop-nav" aria-label={t.navigation}>
+        <LayoutGroup id={`navigation-${locale}`}><nav className="desktop-nav" aria-label={t.navigation}>
           {navPaths.map((p, i) => (
             <Link
               key={p}
@@ -185,9 +193,10 @@ export function Header({ locale }: { locale: Locale }) {
               onClick={i === 0 ? returnHome : undefined}
             >
               {t.nav[i]}
+              {pathname === `/${locale}${p ? "/" + p : ""}` && <motion.span className="nav-active-indicator" layoutId="nav-active-indicator" transition={{ duration: reduced ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }} />}
             </Link>
           ))}
-        </nav>
+        </nav></LayoutGroup>
         <div className="header-end">
           <Link className="header-quote" href={`/${locale}/contact`}>
             {t.quote}
@@ -206,8 +215,12 @@ export function Header({ locale }: { locale: Locale }) {
           </button>
         </div>
       </header>
-      {open && (
-        <div
+      <AnimatePresence>{open && (
+        <motion.div
+          initial={reduced ? false : { opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduced ? { opacity: 1 } : { opacity: 0, y: -6, pointerEvents: "none" }}
+          transition={{ duration: reduced ? 0 : 0.18 }}
           className="mobile-menu"
           role="dialog"
           aria-modal="true"
@@ -252,8 +265,8 @@ export function Header({ locale }: { locale: Locale }) {
             {t.quote}
             <ArrowRight size={18} />
           </Link>
-        </div>
-      )}
+        </motion.div>
+      )}</AnimatePresence>
     </>
   );
 }

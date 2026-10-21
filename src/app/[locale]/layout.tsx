@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Roboto, Noto_Sans_Arabic } from "next/font/google";
 import { Suspense } from "react";
+import { Header } from "@/components/Interactive";
+import { locales, type Locale } from "@/lib/i18n";
 
 import "../globals.css";
 const roboto = Roboto({
@@ -31,7 +33,10 @@ export default async function RootLayout({
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <body className={`${roboto.variable} ${arabic.variable}`}>
-        <Suspense>{children}</Suspense>
+        <Suspense>
+          {locales.includes(locale as Locale) && <Header locale={locale as Locale} />}
+          {children}
+        </Suspense>
       </body>
     </html>
   );

@@ -8,7 +8,6 @@ import { NavigationTransition } from "@/components/NavigationTransition";
 import { about } from "@/data/about";
 import { Footer, Home, ProjectCTA, CustomServices } from "@/components/Site";
 import {
-  Header,
   Button,
   CategoryCollection,
   ImageGallery,
@@ -261,7 +260,6 @@ export default async function Page({ params }: Props) {
   else notFound();
   return (
     <>
-      <Header locale={l} />
       <NavigationTransition className={path.length ? "inner-page" : ""}>
         {content}
       </NavigationTransition>
