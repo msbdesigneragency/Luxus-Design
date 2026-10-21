@@ -9,7 +9,7 @@ export function NavigationTransition({ children, className }: { children: ReactN
   useLayoutEffect(() => {
     if (!scope.current) return;
     // Keep text stationary: one fade, with no nested entrance or page translation.
-    const entrance = animate(scope.current, { opacity: reduced ? 1 : [0, 1] }, {
+    const entrance = animate(scope.current, { opacity: reduced ? 1 : [0.9, 1] }, {
       duration: reduced ? 0 : 0.3, ease: [0.22, 1, 0.36, 1],
     });
     return () => entrance.stop();

@@ -19,7 +19,7 @@ import {
   Download,
   Star,
 } from "lucide-react";
-import { AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
+import { animate, AnimatePresence, LayoutGroup, motion, useReducedMotion } from "framer-motion";
 import { copy, Locale, locales, navPaths, categoryKeys } from "@/lib/i18n";
 import { projects, Project } from "@/data/projects";
 import { referenceContent } from "@/data/reference-content";
@@ -93,6 +93,17 @@ export function Header({ locale }: { locale: Locale }) {
   const menuRef = useRef<HTMLDivElement>(null),
     toggle = useRef<HTMLButtonElement>(null);
   const home = pathname === `/${locale}`;
+  const leavingHome = useRef(false);
+  const enterSalons = async (event: { preventDefault: () => void }) => {
+    event.preventDefault();
+    if (leavingHome.current) return;
+    leavingHome.current = true;
+    const content = document.getElementById("main");
+    if (content && !reduced) {
+      await animate(content, { opacity: 0.9 }, { duration: 0.12, ease: "easeOut" });
+    }
+    router.push(`/${locale}/salons`, { scroll: false });
+  };
   const returnHome = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
@@ -105,6 +116,7 @@ export function Header({ locale }: { locale: Locale }) {
     return () => window.removeEventListener("popstate", restore);
   }, []);
   useLayoutEffect(() => {
+    leavingHome.current = false;
     if (restoring.current) { restoring.current = false; return; }
     // Navbar navigation opts out of Next's scrolling; reset once before paint.
     if (window.location.hash) return;
@@ -187,6 +199,7 @@ export function Header({ locale }: { locale: Locale }) {
               href={`/${locale}/${p}`}
               scroll={false}
               onClick={i === 0 ? returnHome : undefined}
+              onNavigate={home && i === 1 ? enterSalons : undefined}
             >
               {t.nav[i]}
               {pathname === `/${locale}${p ? "/" + p : ""}` && <motion.span className="nav-active-indicator" layoutId="nav-active-indicator" transition={{ duration: reduced ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }} />}
@@ -244,7 +257,7 @@ export function Header({ locale }: { locale: Locale }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04 }}
               >
-                <Link href={`/${locale}/${p}`} scroll={false} onClick={event => { setOpen(false); if (i === 0) returnHome(event); }}>
+                <Link href={`/${locale}/${p}`} scroll={false} onNavigate={home && i === 1 ? enterSalons : undefined} onClick={event => { setOpen(false); if (i === 0) returnHome(event); }}>
                   <small>0{i + 1}</small>
                   {t.nav[i]}
                   <ArrowUpRight />
