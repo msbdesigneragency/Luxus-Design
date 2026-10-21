@@ -17,7 +17,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: var(--font-manrope), Arial, sans-serif;
+  font-family: var(--font-roboto), Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -1855,3 +1855,12 @@ html[dir="rtl"] .hero-content {
   object-fit: contain;
 }
 @media(min-width:901px){.section-heading h2{font-size:clamp(27px,2.5vw,42px)}.custom-services,.service-card{min-height:28vw}.custom-panel h2{font-size:3.5vw}.custom-panel p{font-size:clamp(13px,1.25vw,20px)}}
+
+/* Reference typography: Roboto Light display and regular body text. */
+html:not([dir="rtl"]) .desktop-nav a { font-weight: 500; }
+html:not([dir="rtl"]) .hero h1,
+html:not([dir="rtl"]) .custom-panel h2,
+html:not([dir="rtl"]) .cta-content h2 { font-weight: 300; }
+html:not([dir="rtl"]) h3,
+html:not([dir="rtl"]) .button,
+html:not([dir="rtl"]) .highlights strong { font-weight: 600; }

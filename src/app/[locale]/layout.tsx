@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Manrope, Noto_Sans_Arabic } from "next/font/google";
+import { Roboto, Noto_Sans_Arabic } from "next/font/google";
 import { Suspense } from "react";
 
 import "../globals.css";
-const manrope = Manrope({
+const roboto = Roboto({
   subsets: ["latin"],
-  variable: "--font-manrope",
+  variable: "--font-roboto",
   display: "swap",
 });
 const arabic = Noto_Sans_Arabic({
@@ -30,7 +30,7 @@ export default async function RootLayout({
   const { locale = "fr" } = await params;
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
-      <body className={`${manrope.variable} ${arabic.variable}`}>
+      <body className={`${roboto.variable} ${arabic.variable}`}>
         <Suspense>{children}</Suspense>
       </body>
     </html>
