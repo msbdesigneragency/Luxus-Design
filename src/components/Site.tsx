@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Mail, Phone, MapPin, Instagram } from "lucide-react";
+import { ArrowRight, Mail, Phone, MapPin, Instagram, MessageCircle } from "lucide-react";
 import { copy, Locale, navPaths, servicePaths, categoryKeys } from "@/lib/i18n";
 
 import {
@@ -172,7 +172,7 @@ export function Home({ locale }: { locale: Locale }) {
 }
 export function Footer({ locale }: { locale: Locale }) {
   const t = copy[locale];
-  const phone = process.env.NEXT_PUBLIC_BUSINESS_PHONE,
+  const phone = "+212 666-850179",
     email = process.env.NEXT_PUBLIC_BUSINESS_EMAIL,
     address = process.env.NEXT_PUBLIC_BUSINESS_ADDRESS,
     instagram = process.env.NEXT_PUBLIC_INSTAGRAM_URL;
@@ -222,9 +222,9 @@ export function Footer({ locale }: { locale: Locale }) {
           <h3>{t.nav[5]}</h3>
           <div className="contact-list">
             {phone && (
-              <a href={`tel:${phone}`}>
+              <a href="tel:+212666850179">
                 <Phone size={16} />
-                {phone}
+                <bdi>{phone}</bdi>
               </a>
             )}
             {email && (
@@ -244,6 +244,11 @@ export function Footer({ locale }: { locale: Locale }) {
               {t.contact}
               <ArrowRight size={14} />
             </Link>
+            <a className="footer-whatsapp" href="https://wa.me/212666850179" target="_blank" rel="noopener noreferrer">
+              <MessageCircle size={17} />
+              {locale === "ar" ? "واتساب" : "WhatsApp"}
+              <ArrowRight size={14} />
+            </a>
           </div>
         </div>
       </div>

@@ -2120,6 +2120,13 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
 
 /* Match the reference: content reveals over the site's light paper background. */
 .route-stage { background: var(--paper); }
+.footer .contact-list .footer-whatsapp {
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  width: fit-content; padding: 10px 14px; margin-top: 5px;
+  border-radius: 6px; background: #256d46; color: #fff;
+  transition: background-color 180ms ease;
+}
+.footer .contact-list .footer-whatsapp:hover { background: #1c5737; color: #fff; }
 .desktop-language-menu { position: relative; }
 .desktop-language-menu summary {
   display: flex; align-items: center; justify-content: center; gap: 9px;
