@@ -2117,3 +2117,7 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
   backdrop-filter: blur(16px) saturate(170%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.2);
 }
+
+/* One opaque page group fades over a neutral backing, never over white. */
+.route-stage { background: #171512; }
+.route-content { background: var(--paper); }

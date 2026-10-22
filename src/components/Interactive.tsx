@@ -54,19 +54,9 @@ export function Reveal({
   children: ReactNode;
   className?: string;
 }) {
-  const reduced = useReducedMotion();
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 1, y: 0 }}
-      whileInView={reduced ? {} : { opacity: [0.65, 1], y: [14, 0] }}
-      viewport={{ once: true, amount: 0.12 }}
-      transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
-    >
-      {children}
-    </motion.div>
-  );
+  return <div className={className}>{children}</div>;
 }
+
 export function Brand({ footer = false }: { footer?: boolean }) {
   return (
     <span className={`brand ${footer ? "brand-dark" : ""}`}>
@@ -281,12 +271,8 @@ export function Hero({ locale }: { locale: Locale }) {
   const t = copy[locale];
   return (
     <section className="hero">
-      <motion.div
-        className="hero-photo"
-        initial={false}
-        animate={{ scale: 1 }}
-        transition={{ duration: 1.2 }}
-      >
+      <div
+        className="hero-photo"      >
         <Image
           src="/images/hero-main.webp"
           alt={t.categoryNames[3]}
@@ -295,13 +281,10 @@ export function Hero({ locale }: { locale: Locale }) {
           sizes="100vw"
           quality={90}
         />
-      </motion.div>
+      </div>
       <div className="hero-shade" />
       <div className="hero-content">
-        <motion.div
-          initial={false}
-          animate={{ opacity: 1 }}
-        >
+        <div        >
           <p className="eyebrow">{t.eyebrow}</p>
           <h1>
             {t.hero[0]}
@@ -315,7 +298,7 @@ export function Hero({ locale }: { locale: Locale }) {
               {t.ask}
             </Button>
           </div>
-        </motion.div>
+        </div>
       </div>
       <p className="hero-meta">
         {t.projectLabel}
@@ -544,7 +527,6 @@ export function ImageGallery({
 }
 export function Highlights({ locale, verified = false }: { locale: Locale; verified?: boolean }) {
   const t = copy[locale];
-  const reduced = useReducedMotion();
   const content = referenceContent[locale];
   const icons = [UserRound, Settings2, Diamond, Truck];
   const values = ["5+", "100+", "100%", t.highlights[3]];
@@ -552,19 +534,14 @@ export function Highlights({ locale, verified = false }: { locale: Locale; verif
     <section className="reference-statistics" aria-label={content.statisticsLabel}>
       <div className="highlights section">
         {icons.map((Icon, i) => (
-          <motion.div
-            key={i}
-            initial={false}
-            whileInView={reduced ? {} : { opacity: [0, 1], y: [20, 0] }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.65, delay: i * 0.1, ease: [0.22, 1, 0.36, 1] }}
-          >
+          <div
+            key={i}          >
             <Icon size={36} strokeWidth={1} />
             <p>
               <strong className={i < 3 ? "reference-number" : undefined}>{values[i]}</strong>
               <span>{content.statisticLabels[i]}</span>
             </p>
-          </motion.div>
+          </div>
         ))}
       </div>
       {!verified && <p className="reference-disclosure section">{content.statisticsNote}</p>}
@@ -575,33 +552,23 @@ export function Testimonials({ locale, verified = false }: { locale: Locale; ver
   const t = copy[locale];
   const content = referenceContent[locale];
   const [active, setActive] = useState(0);
-  const reduced = useReducedMotion();
   const touchStart = useRef<number | null>(null);
   const move = (direction: number) => setActive(index => (index + direction + content.reviews.length) % content.reviews.length);
   const ordered = content.reviews.map((_, offset) => content.reviews[(active + offset) % content.reviews.length]);
   return (
     <section className="section testimonials reference-testimonials" aria-label={t.reviews}>
-      <motion.div
-        className="section-heading"
-        initial={false}
-        whileInView={reduced ? {} : { opacity: [0, 1], y: [16, 0] }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      >
+      <div
+        className="section-heading"      >
         <h2>{t.reviews}<span /></h2>
         <div className="review-controls">
           <button type="button" aria-label={content.previous} aria-controls="reference-reviews" onClick={() => move(-1)}><ArrowRight size={18} className="review-previous" /></button>
           <button type="button" aria-label={content.next} aria-controls="reference-reviews" onClick={() => move(1)}><ArrowRight size={18} /></button>
         </div>
-      </motion.div>
+      </div>
       {!verified && <p className="reference-disclosure">{content.reviewNote}</p>}
-      <motion.div
+      <div
         id="reference-reviews"
-        className="testimonial-grid reference-review-grid"
-        initial={reduced ? false : { opacity: 0.65 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.25 }}
-        tabIndex={0}
+        className="testimonial-grid reference-review-grid"        tabIndex={0}
         role="group"
         aria-label={`${t.reviews}: ${active + 1} / ${content.reviews.length}`}
         onKeyDown={event => {
@@ -616,23 +583,18 @@ export function Testimonials({ locale, verified = false }: { locale: Locale; ver
           touchStart.current = null;
         }}
       >
-        {ordered.map((review, index) => (
-          <motion.article
-            key={`${active}-${review.attribution}`}
-            initial={false}
-            whileInView={reduced ? {} : { opacity: [0, 1], y: [22, 0] }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.6, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-          >
+        {ordered.map((review) => (
+          <article
+            key={`${active}-${review.attribution}`}          >
             <Quote size={25} fill="currentColor" aria-hidden="true" />
             <div>
               <p>{review.text}</p>
               <div className="review-stars" role="img" aria-label={content.stars}>{Array.from({ length: 5 }, (_, index) => <Star key={index} size={18} fill="currentColor" strokeWidth={0} />)}</div>
               <small>{review.attribution}</small>
             </div>
-          </motion.article>
+          </article>
         ))}
-      </motion.div>
+      </div>
     </section>
   );
 }
