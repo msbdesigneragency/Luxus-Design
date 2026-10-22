@@ -2121,3 +2121,7 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
 /* Match the reference: content reveals over the site's light paper background. */
 .route-stage { background: var(--paper); }
 .route-content { background: var(--paper); }
+.route-content[data-home-arriving] .hero-content { opacity: 0; transform: translateY(4px); }
+@media (prefers-reduced-motion: reduce) {
+  .route-content[data-home-arriving] .hero-content { opacity: 1; transform: none; }
+}

@@ -24,6 +24,7 @@ function stopAt(value: number) {
   photoEntrance?.cancel();
   photoEntrance = undefined;
   if (surface) surface.style.transform = "";
+  boundary?.removeAttribute("data-home-arriving");
   active = undefined;
 }
 function leave() {
@@ -39,17 +40,20 @@ export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   const key = routeKey.replace(/\/$/, "");
   if (rendered === key && boundary === node) return;
   const first = rendered === undefined;
-  const from = first ? 0.65 : phase === "idle" && !intended ? 0.2 : opacity();
+  const home = key.split("/").length === 2;
+  const from = home ? 0 : first ? 0.65 : phase === "idle" && !intended ? 0.2 : opacity();
   const continuing = phase === "entering";
-  const remaining = continuing ? Math.max(0, until - performance.now()) : first ? 300 : phase === "leaving" ? 200 : 280;
+  const remaining = continuing ? Math.max(0, until - performance.now()) : home ? 300 : first ? 300 : phase === "leaving" ? 200 : 280;
   stopAt(from);
   boundary = node;
   // Keep the photograph and page background opaque: fading them exposes a white/black flash.
   const foreground = node.querySelector<HTMLElement>(".hero-content") ?? node;
+  if (home) node.setAttribute("data-home-arriving", "");
   surface = foreground;
   rendered = key;
   if (reduced()) {
     foreground.style.opacity = "";
+    node.removeAttribute("data-home-arriving");
     phase = "idle";
     intended = undefined;
     return;
@@ -64,17 +68,18 @@ export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   void Promise.all([document.fonts.ready, ...images.map(img => img.decode().catch(() => {}))]).then(() => {
     if (current !== revision || (intended && intended !== key)) return;
     intended = undefined;
-    if (remaining <= 0) { foreground.style.opacity = ""; phase = "idle"; return; }
+    if (remaining <= 0) { foreground.style.opacity = ""; node.removeAttribute("data-home-arriving"); phase = "idle"; return; }
     phase = "entering";
     until = performance.now() + remaining;
     // Hero copy enters as one unit while the image retains its full contrast.
     const entrance = foreground.animate([
-      {opacity: from, transform: continuing ? "none" : "translateY(4px)"},
+      {opacity: from, transform: home || !continuing ? "translateY(4px)" : "none"},
       {opacity: 1, transform: "none"},
-    ], {duration: remaining, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards"});
+    ], {duration: remaining, easing: home ? "cubic-bezier(0.25, 0.1, 0.25, 1)" : "cubic-bezier(0.22, 1, 0.36, 1)", fill: "both"});
+    node.removeAttribute("data-home-arriving");
     active = entrance;
     const photo = node.querySelector<HTMLElement>(".hero-photo");
-    if (photo && !continuing) {
+    if (photo && !continuing && !home) {
       photoEntrance = photo.animate([
         {transform: "scale(1.015)"}, {transform: "scale(1)"},
       ], {duration: remaining, easing: "cubic-bezier(0.22, 1, 0.36, 1)"});
