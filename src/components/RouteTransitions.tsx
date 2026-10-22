@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { createDesktopNavigation } from "./DesktopRouteMotion";
 
 // One transition owner for navbar, content links and browser history.
 let startNavigation: ((href: string) => void) | null = null;
@@ -35,14 +36,20 @@ export function RouteTransitions() {
 
   useEffect(() => {
     let safetyTimer: ReturnType<typeof setTimeout> | undefined;
+    const desktop = createDesktopNavigation(href => router.push(href, { scroll: false }));
     const navigate = async (href: string) => {
       const destination = new URL(href, location.href);
-      if (destination.origin !== location.origin || destination.pathname === location.pathname) return;
+      if (destination.origin !== location.origin) return;
       // Locale changes use the existing full document navigation: never blend scripts or directions.
       if (destination.pathname.split("/")[1] !== location.pathname.split("/")[1]) {
         location.assign(destination.href);
         return;
       }
+      if (matchMedia("(min-width: 1101px)").matches) {
+        void desktop.navigate(destination.pathname + destination.search + destination.hash);
+        return;
+      }
+      if (destination.pathname === location.pathname) return;
       clearTimeout(safetyTimer);
       const current = ++generation.current;
       animation.current?.cancel();
@@ -77,6 +84,7 @@ export function RouteTransitions() {
       void navigate(link.href);
     };
     const history = () => {
+      desktop.cancel();
       clearTimeout(safetyTimer);
       generation.current++;
       pending.current = false;

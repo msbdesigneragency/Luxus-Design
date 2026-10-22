@@ -99,7 +99,10 @@ export function Header({ locale }: { locale: Locale }) {
   const returnHome = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    if (home) window.scrollTo({ top: 0, left: 0, behavior: reduced ? "instant" : "smooth" });
+    if (home) {
+      if (matchMedia("(min-width: 1101px)").matches) navigatePage(`/${locale}`);
+      window.scrollTo({ top: 0, left: 0, behavior: reduced ? "instant" : "smooth" });
+    }
     else navigatePage(`/${locale}`);
   };
   useEffect(() => {
@@ -195,7 +198,7 @@ export function Header({ locale }: { locale: Locale }) {
               onNavigate={event => { event.preventDefault(); navigatePage(`/${locale}${p ? "/" + p : ""}`); }}
             >
               {t.nav[i]}
-              {pathname === `/${locale}${p ? "/" + p : ""}` && <motion.span className="nav-active-indicator" layoutId="nav-active-indicator" transition={{ duration: reduced ? 0 : 0.3, ease: [0.22, 1, 0.36, 1] }} />}
+              {pathname === `/${locale}${p ? "/" + p : ""}` && <motion.span className="nav-active-indicator" layoutId="nav-active-indicator" transition={{ duration: reduced ? 0 : typeof window !== "undefined" && matchMedia("(min-width: 1101px)").matches ? 0.12 : 0.3, ease: [0.22, 1, 0.36, 1] }} />}
             </Link>
           ))}
         </nav></LayoutGroup>
