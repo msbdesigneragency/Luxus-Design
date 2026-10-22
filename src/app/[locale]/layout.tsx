@@ -32,7 +32,7 @@ export default async function RootLayout({
 }) {
   const { locale = "fr" } = await params;
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} style={{ backgroundColor: "#211c16" }}>
       <body className={`${roboto.variable} ${arabic.variable}`}>
         <Suspense>
           <RouteTransitions />
