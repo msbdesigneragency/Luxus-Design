@@ -269,7 +269,7 @@ export default async function Page({ params }: Props) {
   const heroTitle = t.nav[navPaths.indexOf(route)];
   return (
     <>
-      <NavigationTransition className={heroImage ? "inner-page has-route-hero" : path.length ? "inner-page" : ""}>
+      <NavigationTransition routeKey={`/${l}/${path.join("/")}`} className={heroImage ? "inner-page has-route-hero" : path.length ? "inner-page" : ""}>
         {heroImage && (
           <section className="hero route-hero" aria-label={heroTitle}>
             <div className="hero-photo">

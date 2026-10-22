@@ -22,6 +22,9 @@ export function RouteTransitions() {
     const wasPending = pending.current;
     pending.current = false;
     animation.current?.cancel();
+    // Desktop entrance belongs to the destination itself, after its content commits.
+    // Keep the existing mobile timing and behavior untouched.
+    if (matchMedia("(min-width: 1101px)").matches) return;
     const main = document.getElementById("main");
     if (!main || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     animation.current = main.animate(
@@ -46,8 +49,9 @@ export function RouteTransitions() {
       const main = document.getElementById("main");
       pending.current = true;
       if (main && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
-        const outgoing = main.animate([{ opacity: 1 }, { opacity: 0.82 }], {
-          duration: 100, easing: "ease-out", fill: "forwards",
+        const desktop = matchMedia("(min-width: 1101px)").matches;
+        const outgoing = main.animate([{ opacity: getComputedStyle(main).opacity }, { opacity: desktop ? 0.65 : 0.82 }], {
+          duration: desktop ? 80 : 100, easing: "ease-out", fill: "forwards",
         });
         animation.current = outgoing;
         await outgoing.finished.catch(() => {});
