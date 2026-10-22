@@ -172,7 +172,7 @@ export function Header({ locale }: { locale: Locale }) {
       <a href="#main" className="skip-link">
         {t.skip}
       </a>
-      <header className={`header ${!home || scrolled ? "solid" : ""}`}>
+      <header className={`header ${!home || scrolled ? "solid" : ""}`} data-scrolled={scrolled}>
         <Link href={`/${locale}`} aria-label="LUXUS DESIGN" onClick={returnHome} scroll={false}>
           <Brand />
         </Link>

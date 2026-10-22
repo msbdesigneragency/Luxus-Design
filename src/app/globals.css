@@ -2121,6 +2121,22 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
 /* Match the reference: content reveals over the site's light paper background. */
 .route-stage { background: var(--paper); }
 .route-content { background: var(--paper); }
+@media (min-width: 1101px) {
+  .header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: rgba(35, 28, 22, .96);
+    opacity: 0;
+    transition: opacity 240ms ease-out;
+  }
+  .header[data-scrolled="true"]::before { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .header::before { transition: none; }
+}
 .route-content[data-home-arriving] .hero-content { opacity: 0; transform: translateY(4px); }
 @media (prefers-reduced-motion: reduce) {
   .route-content[data-home-arriving] .hero-content { opacity: 1; transform: none; }
