@@ -2120,6 +2120,16 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
 
 /* Match the reference: content reveals over the site's light paper background. */
 .route-stage { background: var(--paper); }
+.floating-whatsapp {
+  position: fixed; right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom)); z-index: 60;
+  display: flex; align-items: center; justify-content: center;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: #25d366; color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,.2);
+  transition: background-color 180ms ease;
+}
+.floating-whatsapp:hover { background: #1fb85a; }
+.floating-whatsapp:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
 .footer .contact-list .footer-whatsapp {
   display: inline-flex; align-items: center; justify-content: center; gap: 9px;
   width: fit-content; padding: 10px 14px; margin-top: 5px;
