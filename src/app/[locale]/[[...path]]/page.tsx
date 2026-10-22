@@ -274,7 +274,7 @@ export default async function Page({ params }: Props) {
         {heroImage && (
           <section className="hero route-hero" aria-label={heroTitle}>
             <div className="hero-photo">
-              <Image src={heroImage} alt={heroTitle} fill priority sizes="100vw" quality={90} placeholder="blur" blurDataURL={heroPreviews[heroImage as keyof typeof heroPreviews]} />
+              <Image key={heroImage} src={heroImage} alt={heroTitle} fill priority sizes="100vw" quality={90} placeholder={heroPreviews[heroImage as keyof typeof heroPreviews] as `data:image/${string}`} />
             </div>
             <div className="hero-shade" />
             <div className="hero-content">

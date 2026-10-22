@@ -4,94 +4,74 @@ import { useRouter } from "next/navigation";
 
 let navigate: ((href: string) => void) | undefined;
 let surface: HTMLElement | null = null;
-let active: Animation | undefined;
-let photoEntrance: Animation | undefined;
 let boundary: HTMLElement | null = null;
 let rendered: string | undefined;
 let intended: string | undefined;
-let phase: "idle" | "leaving" | "entering" = "idle";
-let until = 0;
-let revision = 0;
+let animations: Animation[] = [];
+let observer: IntersectionObserver | undefined;
 const pathOf = (href: string) => new URL(href, location.href).pathname.replace(/\/$/, "");
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-const opacity = () => {
-  const value = surface?.isConnected ? Number.parseFloat(getComputedStyle(surface).opacity) : 0.2;
-  return Number.isFinite(value) ? Math.max(0.2, Math.min(1, value)) : 0.2;
-};
 function stopAt(value: number) {
-  if (surface) surface.style.opacity = String(value);
-  active?.cancel();
-  photoEntrance?.cancel();
-  photoEntrance = undefined;
-  if (surface) surface.style.transform = "";
+  observer?.disconnect();
+  observer = undefined;
+  animations.forEach(animation => animation.cancel());
+  animations = [];
+  boundary?.querySelectorAll<HTMLElement>("[data-section-pending]").forEach(section => {
+    section.removeAttribute("data-section-pending");
+    section.style.opacity = "";
+    section.style.transform = "";
+  });
   boundary?.removeAttribute("data-home-arriving");
-  active = undefined;
+  if (surface) { surface.style.opacity = String(value); surface.style.transform = ""; }
 }
 function leave() {
-  if (!surface || reduced() || phase !== "idle") return;
-  phase = "leaving";
-  active = surface.animate([{opacity: 1}, {opacity: 0.2}], {duration: 100, easing: "ease-out", fill: "forwards"});
+  // Fetch immediately, keeping the current page readable until the next DOM commits.
 }
 export function transitionTo(href: string, fallback: () => void) {
   if (navigate) navigate(href); else fallback();
 }
-// Called by the content boundary only when the destination DOM has committed.
+function reveal(element: HTMLElement, distance: number, from = 0) {
+  const animation = element.animate([
+    {opacity: from, transform: distance ? 'translateY(' + distance + 'px)' : "none"},
+    {opacity: 1, transform: "none"},
+  ], {duration: 320, easing: "cubic-bezier(0.25, 0.1, 0.25, 1)", fill: "both"});
+  animations.push(animation);
+  element.style.opacity = "";
+  element.style.transform = "";
+  element.removeAttribute("data-section-pending");
+  void animation.finished.then(() => animation.cancel()).catch(() => {});
+}
 export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   const key = routeKey.replace(/\/$/, "");
   if (rendered === key && boundary === node) return;
-  const first = rendered === undefined;
-  const home = key.split("/").length === 2;
-  const from = home ? 0 : first ? 0.65 : phase === "idle" && !intended ? 0.2 : opacity();
-  const continuing = phase === "entering";
-  const remaining = continuing ? Math.max(0, until - performance.now()) : home ? 300 : first ? 300 : phase === "leaving" ? 200 : 280;
-  stopAt(from);
+  stopAt(1);
   boundary = node;
-  // Keep the photograph and page background opaque: fading them exposes a white/black flash.
-  const foreground = node.querySelector<HTMLElement>(".hero-content") ?? node;
-  if (home) node.setAttribute("data-home-arriving", "");
-  surface = foreground;
   rendered = key;
-  if (reduced()) {
-    foreground.style.opacity = "";
-    node.removeAttribute("data-home-arriving");
-    phase = "idle";
-    intended = undefined;
-    return;
-  }
-  foreground.style.opacity = String(from);
-  const current = ++revision;
-  const images = [...node.querySelectorAll<HTMLImageElement>("img")].filter(img => {
-    const box = img.getBoundingClientRect();
-    return box.bottom > 0 && box.top < innerHeight && box.width > 0;
-  });
-  // Actual font/image readiness, not a timer; off-screen lazy images retain their reserved boxes.
-  void Promise.all([document.fonts.ready, ...images.map(img => img.decode().catch(() => {}))]).then(() => {
-    if (current !== revision || (intended && intended !== key)) return;
-    intended = undefined;
-    if (remaining <= 0) { foreground.style.opacity = ""; node.removeAttribute("data-home-arriving"); phase = "idle"; return; }
-    phase = "entering";
-    until = performance.now() + remaining;
-    // Hero copy enters as one unit while the image retains its full contrast.
-    const entrance = foreground.animate([
-      {opacity: from, transform: home || !continuing ? "translateY(4px)" : "none"},
-      {opacity: 1, transform: "none"},
-    ], {duration: remaining, easing: home ? "cubic-bezier(0.25, 0.1, 0.25, 1)" : "cubic-bezier(0.22, 1, 0.36, 1)", fill: "both"});
-    node.removeAttribute("data-home-arriving");
-    active = entrance;
+  intended = undefined;
+  surface = node.querySelector<HTMLElement>(".hero-content") ?? node;
+  node.removeAttribute("data-home-arriving");
+  if (reduced()) return;
+  // No decoding/font promise gates, queues, or inherited deadlines between routes.
+  reveal(surface, 4);
+  const home = key.split("/").length === 2;
+  if (home) {
     const photo = node.querySelector<HTMLElement>(".hero-photo");
-    if (photo && !continuing && !home) {
-      photoEntrance = photo.animate([
-        {transform: "scale(1.015)"}, {transform: "scale(1)"},
-      ], {duration: remaining, easing: "cubic-bezier(0.22, 1, 0.36, 1)"});
-    }
-    void entrance.finished.then(() => {
-      if (active !== entrance) return;
-      foreground.style.opacity = "";
-      entrance.cancel();
-      active = undefined;
-      phase = "idle";
-    }).catch(() => {});
-  });
+    if (photo) reveal(photo, 0, 0.8);
+    observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        reveal(entry.target as HTMLElement, 8);
+        observer?.unobserve(entry.target);
+      });
+    }, {threshold: 0.08});
+    node.querySelectorAll<HTMLElement>("main > section:not(.hero)").forEach(section => {
+      if (section.getBoundingClientRect().bottom <= 0) return;
+      section.setAttribute("data-section-pending", "");
+      section.style.opacity = "0";
+      section.style.transform = "translateY(8px)";
+      observer?.observe(section);
+    });
+  }
 }
 export function RouteTransitions() {
   const router = useRouter();
@@ -104,9 +84,7 @@ export function RouteTransitions() {
       if (key === pathOf(location.href)) {
         if (intended) {
           intended = undefined;
-          revision++;
           stopAt(1);
-          phase = "idle";
           router.push(target.pathname + target.search + target.hash, {scroll: false});
         }
         return;
@@ -130,9 +108,7 @@ export function RouteTransitions() {
     window.addEventListener("popstate", history);
     return () => {
       navigate = undefined;
-      revision++;
       stopAt(1);
-      phase = "idle";
       document.removeEventListener("click", click, true);
       window.removeEventListener("popstate", history);
     };
