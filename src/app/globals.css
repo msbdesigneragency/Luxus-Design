@@ -2127,5 +2127,4 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
 }
 @media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
   .route-content[data-desktop-arriving] .hero-content { opacity: 0; transform: translateY(5px); }
-  .route-content[data-desktop-arriving] .hero-photo { opacity: .88; }
 }

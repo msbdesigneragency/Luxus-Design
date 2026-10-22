@@ -18,7 +18,7 @@ export function desktopEntrance(node: HTMLElement, initial: boolean): () => void
     const photo = hero?.querySelector<HTMLElement>(".hero-photo");
     const text = hero?.querySelector<HTMLElement>(".hero-content");
     // Retain the image's contrast; never fade the entire page over a blank backing.
-    if (photo) animate(photo, 0, 0.88);
+    if (photo && !initial) animate(photo, 0, 0.88);
     if (text) animate(text, initial ? 5 : 4, 0);
     const visible = [...node.querySelectorAll<HTMLElement>("main > :not(.hero), footer")].filter(element => {
       const box = element.getBoundingClientRect();

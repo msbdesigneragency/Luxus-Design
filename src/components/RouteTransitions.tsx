@@ -66,7 +66,7 @@ export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   const home = key.split("/").length === 2;
   if (home) {
     const photo = node.querySelector<HTMLElement>(".hero-photo");
-    if (photo) reveal(photo, 0, 0.8);
+    if (photo && !initial) reveal(photo, 0, 0.8);
     observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (!entry.isIntersecting) return;
