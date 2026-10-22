@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import heroPreviews from "@/lib/hero-previews.json";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { copy, Locale, locales, navPaths, servicePaths } from "@/lib/i18n";
@@ -273,7 +274,7 @@ export default async function Page({ params }: Props) {
         {heroImage && (
           <section className="hero route-hero" aria-label={heroTitle}>
             <div className="hero-photo">
-              <Image src={heroImage} alt={heroTitle} fill priority sizes="100vw" quality={90} />
+              <Image src={heroImage} alt={heroTitle} fill priority sizes="100vw" quality={90} placeholder="blur" blurDataURL={heroPreviews[heroImage as keyof typeof heroPreviews]} />
             </div>
             <div className="hero-shade" />
             <div className="hero-content">

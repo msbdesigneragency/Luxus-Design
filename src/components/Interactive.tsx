@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import Link from "next/link";
 import { transitionTo } from "./RouteTransitions";
 import Image from "next/image";
+import heroPreviews from "@/lib/hero-previews.json";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
   ArrowRight,
@@ -275,6 +276,8 @@ export function Hero({ locale }: { locale: Locale }) {
         className="hero-photo"      >
         <Image
           src="/images/hero-main.webp"
+          placeholder="blur"
+          blurDataURL={heroPreviews["/images/hero-main.webp"]}
           alt={t.categoryNames[3]}
           fill
           priority

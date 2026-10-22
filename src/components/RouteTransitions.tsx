@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 let navigate: ((href: string) => void) | undefined;
 let surface: HTMLElement | null = null;
 let active: Animation | undefined;
+let photoEntrance: Animation | undefined;
+let boundary: HTMLElement | null = null;
 let rendered: string | undefined;
 let intended: string | undefined;
 let phase: "idle" | "leaving" | "entering" = "idle";
@@ -19,6 +21,8 @@ const opacity = () => {
 function stopAt(value: number) {
   if (surface) surface.style.opacity = String(value);
   active?.cancel();
+  photoEntrance?.cancel();
+  photoEntrance = undefined;
   if (surface) surface.style.transform = "";
   active = undefined;
 }
@@ -33,21 +37,24 @@ export function transitionTo(href: string, fallback: () => void) {
 // Called by the content boundary only when the destination DOM has committed.
 export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   const key = routeKey.replace(/\/$/, "");
-  if (rendered === key && surface === node) return;
+  if (rendered === key && boundary === node) return;
   const first = rendered === undefined;
   const from = first ? 0.65 : phase === "idle" && !intended ? 0.2 : opacity();
   const continuing = phase === "entering";
   const remaining = continuing ? Math.max(0, until - performance.now()) : first ? 300 : phase === "leaving" ? 200 : 280;
   stopAt(from);
-  surface = node;
+  boundary = node;
+  // Keep the photograph and page background opaque: fading them exposes a white/black flash.
+  const foreground = node.querySelector<HTMLElement>(".hero-content") ?? node;
+  surface = foreground;
   rendered = key;
   if (reduced()) {
-    node.style.opacity = "";
+    foreground.style.opacity = "";
     phase = "idle";
     intended = undefined;
     return;
   }
-  node.style.opacity = String(from);
+  foreground.style.opacity = String(from);
   const current = ++revision;
   const images = [...node.querySelectorAll<HTMLImageElement>("img")].filter(img => {
     const box = img.getBoundingClientRect();
@@ -57,18 +64,24 @@ export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   void Promise.all([document.fonts.ready, ...images.map(img => img.decode().catch(() => {}))]).then(() => {
     if (current !== revision || (intended && intended !== key)) return;
     intended = undefined;
-    if (remaining <= 0) { node.style.opacity = ""; phase = "idle"; return; }
+    if (remaining <= 0) { foreground.style.opacity = ""; phase = "idle"; return; }
     phase = "entering";
     until = performance.now() + remaining;
-    // One small reveal for the entire page; interrupted arrivals only finish their fade.
-    const entrance = node.animate([
+    // Hero copy enters as one unit while the image retains its full contrast.
+    const entrance = foreground.animate([
       {opacity: from, transform: continuing ? "none" : "translateY(4px)"},
       {opacity: 1, transform: "none"},
     ], {duration: remaining, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards"});
     active = entrance;
+    const photo = node.querySelector<HTMLElement>(".hero-photo");
+    if (photo && !continuing) {
+      photoEntrance = photo.animate([
+        {transform: "scale(1.015)"}, {transform: "scale(1)"},
+      ], {duration: remaining, easing: "cubic-bezier(0.22, 1, 0.36, 1)"});
+    }
     void entrance.finished.then(() => {
       if (active !== entrance) return;
-      node.style.opacity = "";
+      foreground.style.opacity = "";
       entrance.cancel();
       active = undefined;
       phase = "idle";
