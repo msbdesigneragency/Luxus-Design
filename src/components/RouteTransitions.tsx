@@ -19,6 +19,7 @@ const opacity = () => {
 function stopAt(value: number) {
   if (surface) surface.style.opacity = String(value);
   active?.cancel();
+  if (surface) surface.style.transform = "";
   active = undefined;
 }
 function leave() {
@@ -34,12 +35,13 @@ export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   const key = routeKey.replace(/\/$/, "");
   if (rendered === key && surface === node) return;
   const first = rendered === undefined;
-  const from = phase === "idle" && !intended ? 0.2 : opacity();
-  const remaining = phase === "entering" ? Math.max(0, until - performance.now()) : phase === "leaving" ? 160 : 220;
+  const from = first ? 0.65 : phase === "idle" && !intended ? 0.2 : opacity();
+  const continuing = phase === "entering";
+  const remaining = continuing ? Math.max(0, until - performance.now()) : first ? 300 : phase === "leaving" ? 200 : 280;
   stopAt(from);
   surface = node;
   rendered = key;
-  if (first || reduced()) {
+  if (reduced()) {
     node.style.opacity = "";
     phase = "idle";
     intended = undefined;
@@ -58,7 +60,11 @@ export function routeContentCommitted(node: HTMLElement, routeKey: string) {
     if (remaining <= 0) { node.style.opacity = ""; phase = "idle"; return; }
     phase = "entering";
     until = performance.now() + remaining;
-    const entrance = node.animate([{opacity: from}, {opacity: 1}], {duration: remaining, easing: "ease-out", fill: "forwards"});
+    // One small reveal for the entire page; interrupted arrivals only finish their fade.
+    const entrance = node.animate([
+      {opacity: from, transform: continuing ? "none" : "translateY(4px)"},
+      {opacity: 1, transform: "none"},
+    ], {duration: remaining, easing: "cubic-bezier(0.22, 1, 0.36, 1)", fill: "forwards"});
     active = entrance;
     void entrance.finished.then(() => {
       if (active !== entrance) return;
