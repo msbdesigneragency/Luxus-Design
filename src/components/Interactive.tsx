@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
+import { transitionTo } from "./RouteTransitions";
 import Image from "next/image";
 import { usePathname, useSearchParams, useRouter } from "next/navigation";
 import {
@@ -92,24 +93,8 @@ export function Header({ locale }: { locale: Locale }) {
   const menuRef = useRef<HTMLDivElement>(null),
     toggle = useRef<HTMLButtonElement>(null);
   const home = pathname === `/${locale}`;
-  const transitionCommit = useRef<(() => void) | null>(null);
-  const activeTransition = useRef<ViewTransition | null>(null);
   const navigatePage = (href: string) => {
-    if (new URL(href, window.location.href).pathname === pathname) return;
-    activeTransition.current?.skipTransition();
-    transitionCommit.current?.();
-    if (reduced || !document.startViewTransition) {
-      router.push(href, { scroll: false });
-      return;
-    }
-    const transition = document.startViewTransition(() => new Promise<void>(resolve => {
-      // Hold the outgoing snapshot until the new route commits; no artificial delay.
-      const timeout = window.setTimeout(resolve, 3000);
-      transitionCommit.current = () => { window.clearTimeout(timeout); resolve(); };
-      router.push(href, { scroll: false });
-    }));
-    activeTransition.current = transition;
-    void transition.finished.catch(() => {});
+    transitionTo(href, () => router.push(href, { scroll: false }));
   };
   const returnHome = (event: React.MouseEvent<HTMLAnchorElement>) => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -123,8 +108,8 @@ export function Header({ locale }: { locale: Locale }) {
     return () => window.removeEventListener("popstate", restore);
   }, []);
   useLayoutEffect(() => {
-    transitionCommit.current?.();
-    transitionCommit.current = null;
+
+
     if (restoring.current) { restoring.current = false; return; }
     // Navbar navigation opts out of Next's scrolling; reset once before paint.
     if (window.location.hash) return;
@@ -278,6 +263,7 @@ export function Header({ locale }: { locale: Locale }) {
             className="button"
             href={`/${locale}/contact`}
             scroll={false}
+            onNavigate={event => { event.preventDefault(); navigatePage(`/${locale}/contact`); }}
             onClick={() => setOpen(false)}
           >
             {t.quote}
@@ -289,13 +275,12 @@ export function Header({ locale }: { locale: Locale }) {
   );
 }
 export function Hero({ locale }: { locale: Locale }) {
-  const t = copy[locale],
-    reduced = useReducedMotion();
+  const t = copy[locale];
   return (
     <section className="hero">
       <motion.div
         className="hero-photo"
-        initial={reduced ? false : { scale: 1.035 }}
+        initial={false}
         animate={{ scale: 1 }}
         transition={{ duration: 1.2 }}
       >
@@ -456,7 +441,7 @@ export function CategoryCollection({ locale }: { locale: Locale }) {
   return (
     <>
       <section className="page-intro section">
-        <p className="eyebrow">LUXUS DESIGN Â· {t.nav[1]}</p>
+        <p className="eyebrow">LUXUS DESIGN · {t.nav[1]}</p>
         <h1>{index >= 0 ? t.categoryNames[index] : t.nav[1]}</h1>
         <p>{t.catalogIntro}</p>
         <div className="filters collection-filters">
@@ -524,7 +509,7 @@ export function ImageGallery({
       <div className="detail-photo">
         <Image
           src={images[index]}
-          alt={`${title} Â· ${index + 1}`}
+          alt={`${title} · ${index + 1}`}
           fill
           priority
           sizes="(max-width:768px) 100vw, 90vw"

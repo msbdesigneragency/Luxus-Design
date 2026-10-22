@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Roboto, Noto_Sans_Arabic } from "next/font/google";
 import { Suspense } from "react";
+import { RouteTransitions } from "@/components/RouteTransitions";
 import { Header } from "@/components/Interactive";
 import { locales, type Locale } from "@/lib/i18n";
 
@@ -34,6 +35,7 @@ export default async function RootLayout({
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <body className={`${roboto.variable} ${arabic.variable}`}>
         <Suspense>
+          <RouteTransitions />
           {locales.includes(locale as Locale) && <Header locale={locale as Locale} />}
           {children}
         </Suspense>
