@@ -18,6 +18,9 @@ import {
 } from "@/components/Interactive";
 type Props = { params: Promise<{ locale: string; path?: string[] }> };
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+export function generateStaticParams() {
+  return locales.flatMap(locale => navPaths.map(route => ({locale, path: route ? [route] : []})));
+}
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, path = [] } = await params;
   if (!locales.includes(locale as Locale)) return {};
@@ -274,7 +277,7 @@ export default async function Page({ params }: Props) {
         {heroImage && (
           <section className="hero route-hero" aria-label={heroTitle}>
             <div className="hero-photo">
-              <Image key={heroImage} src={heroImage} alt={heroTitle} fill priority sizes="100vw" quality={90} placeholder={heroPreviews[heroImage as keyof typeof heroPreviews] as `data:image/${string}`} />
+              <Image key={heroImage} src={heroImage} alt={heroTitle} fill priority unoptimized sizes="100vw" quality={90} placeholder={heroPreviews[heroImage as keyof typeof heroPreviews] as `data:image/${string}`} />
             </div>
             <div className="hero-shade" />
             <div className="hero-content">

@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { transitionTo } from "./RouteTransitions";
 import Image from "next/image";
 import homePreview from "@/lib/home-preview.json";
-import { usePathname, useSearchParams, useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -25,6 +25,18 @@ import { copy, Locale, locales, navPaths, categoryKeys } from "@/lib/i18n";
 import { projects, Project } from "@/data/projects";
 import { referenceContent } from "@/data/reference-content";
 import { quoteSchema } from "@/lib/quote";
+const subscribeQuery = (update: () => void) => {
+  window.addEventListener("popstate", update);
+  window.addEventListener("luxus-query", update);
+  return () => { window.removeEventListener("popstate", update); window.removeEventListener("luxus-query", update); };
+};
+function useSearchParams() {
+  // Keep server-rendered content visible instead of suspending the whole page
+  // for a query string. React reconciles the browser query after hydration.
+  usePathname();
+  const query = useSyncExternalStore(subscribeQuery, () => location.search, () => "");
+  return new URLSearchParams(query);
+}
 export function Arrow({ circle = false }: { circle?: boolean }) {
   return (
     <span className={circle ? "circle-arrow" : "arrow"}>
@@ -276,6 +288,7 @@ export function Hero({ locale }: { locale: Locale }) {
         className="hero-photo"      >
         <Image
           src="/images/hero-main.webp"
+          unoptimized
           placeholder={homePreview as `data:image/${string}`}
           alt={t.categoryNames[3]}
           fill
@@ -356,6 +369,7 @@ function useStationaryFilter() {
     else url.searchParams.delete("categorie");
     // Native history integrates with useSearchParams without triggering route scrolling.
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    window.dispatchEvent(new Event("luxus-query"));
   };
   const bindResults = (element: HTMLElement | null) => { results.current = element; };
   return { bindResults, minimumHeight, select };

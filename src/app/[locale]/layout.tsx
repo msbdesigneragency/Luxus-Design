@@ -37,8 +37,8 @@ export default async function RootLayout({
         <Suspense>
           <RouteTransitions />
           {locales.includes(locale as Locale) && <Header locale={locale as Locale} />}
-          {children}
         </Suspense>
+        {children}
       </body>
     </html>
   );
