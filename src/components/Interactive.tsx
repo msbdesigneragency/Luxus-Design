@@ -2,6 +2,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import Link from "next/link";
 import { transitionTo } from "./RouteTransitions";
+import { DesktopLanguage } from "./DesktopLanguage";
 import Image from "next/image";
 import homePreview from "@/lib/home-preview.json";
 import { usePathname, useRouter } from "next/navigation";
@@ -210,7 +211,7 @@ export function Header({ locale }: { locale: Locale }) {
             {t.quote}
             <ArrowRight size={15} />
           </Link>
-          <div className="desktop-lang">{languages}</div>
+          <div className="desktop-lang"><DesktopLanguage locale={locale} label={t.language} onChange={langChange} /></div>
           <button
             ref={toggle}
             className="menu-toggle"

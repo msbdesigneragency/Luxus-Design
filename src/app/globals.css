@@ -2120,6 +2120,28 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
 
 /* Match the reference: content reveals over the site's light paper background. */
 .route-stage { background: var(--paper); }
+.desktop-language-menu { position: relative; }
+.desktop-language-menu summary {
+  display: flex; align-items: center; justify-content: center; gap: 9px;
+  padding: 10px 3px; cursor: pointer; list-style: none; font-size: clamp(12px,1vw,16px);
+}
+.desktop-language-menu summary::-webkit-details-marker { display: none; }
+.desktop-language-options {
+  position: absolute; inset-inline-end: -7px; top: calc(100% + 12px);
+  min-width: 92px; padding: 5px; border-radius: 10px;
+  background: rgba(35,28,22,.98); border: 1px solid rgba(255,255,255,.24);
+  box-shadow: 0 8px 24px rgba(0,0,0,.16);
+}
+.desktop-language-options button {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  padding: 9px 11px; border: 0; border-radius: 6px; background: transparent;
+  color: #fff; font: inherit; font-size: 12px; cursor: pointer;
+  transition: background-color 160ms ease;
+}
+.desktop-language-options button:hover,
+.desktop-language-options button[aria-pressed="true"] { background: rgba(255,255,255,.12); }
+.desktop-language-menu summary:focus-visible,
+.desktop-language-options button:focus-visible { outline: 1px solid white; outline-offset: 2px; }
 .route-content { background: var(--paper); }
 @media (min-width: 1101px) {
   .header::before {
