@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { desktopEntrance } from "./DesktopEntrance";
 
 let navigate: ((href: string) => void) | undefined;
 let surface: HTMLElement | null = null;
@@ -9,9 +10,12 @@ let rendered: string | undefined;
 let intended: string | undefined;
 let animations: Animation[] = [];
 let observer: IntersectionObserver | undefined;
+let stopDesktop: (() => void) | undefined;
 const pathOf = (href: string) => new URL(href, location.href).pathname.replace(/\/$/, "");
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 function stopAt(value: number) {
+  stopDesktop?.();
+  stopDesktop = undefined;
   observer?.disconnect();
   observer = undefined;
   animations.forEach(animation => animation.cancel());
@@ -44,12 +48,18 @@ function reveal(element: HTMLElement, distance: number, from = 0) {
 export function routeContentCommitted(node: HTMLElement, routeKey: string) {
   const key = routeKey.replace(/\/$/, "");
   if (rendered === key && boundary === node) return;
+  const initial = rendered === undefined;
   stopAt(1);
   boundary = node;
   rendered = key;
   intended = undefined;
   surface = node.querySelector<HTMLElement>(".hero-content") ?? node;
   node.removeAttribute("data-home-arriving");
+  if (matchMedia("(min-width: 1101px)").matches) {
+    stopDesktop = desktopEntrance(node, initial);
+    return;
+  }
+  node.removeAttribute("data-desktop-arriving");
   if (reduced()) return;
   // No decoding/font promise gates, queues, or inherited deadlines between routes.
   reveal(surface, 4);
