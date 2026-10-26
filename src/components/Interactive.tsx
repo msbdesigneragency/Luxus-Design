@@ -202,7 +202,7 @@ export function Header({ locale }: { locale: Locale }) {
               onNavigate={event => { event.preventDefault(); navigatePage(`/${locale}${p ? "/" + p : ""}`); }}
             >
               {t.nav[i]}
-              {pathname === `/${locale}${p ? "/" + p : ""}` && <motion.span className="nav-active-indicator" layoutId="nav-active-indicator" transition={{ duration: reduced ? 0 : typeof window !== "undefined" && matchMedia("(min-width: 1101px)").matches ? 0.12 : 0.3, ease: [0.22, 1, 0.36, 1] }} />}
+              {pathname === `/${locale}${p ? "/" + p : ""}` && <motion.span className="nav-active-indicator" layoutId="nav-active-indicator" transition={{ duration: reduced ? 0 : 0.23, ease: [0.22, 1, 0.36, 1] }} />}
             </Link>
           ))}
         </nav></LayoutGroup>
@@ -286,7 +286,7 @@ export function Hero({ locale }: { locale: Locale }) {
   return (
     <section className="hero">
       <div
-        className="hero-photo"      >
+        className="hero-photo"        style={{backgroundImage: 'url("/images/hero-main.webp")'}}      >
         <Image
           src="/images/hero-main.webp"
           unoptimized

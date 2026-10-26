@@ -6,6 +6,5 @@ export function NavigationTransition({ children, footer, className, routeKey }: 
   useLayoutEffect(() => {
     if (content.current) routeContentCommitted(content.current, routeKey);
   }, [routeKey]);
-  const home = routeKey.replace(/\/$/, "").split("/").length === 2;
-  return <div className="route-stage"><div className="route-content" data-desktop-arriving="" data-home-arriving={home ? "" : undefined} ref={content}><main id="main" className={className}>{children}</main>{footer}</div><noscript><style>{`.route-content[data-home-arriving] .hero-content,.route-content[data-desktop-arriving] .hero-content{opacity:1;transform:none}`}</style></noscript></div>;
+  return <div className="route-stage"><div className="route-content" data-page-entering={routeKey} ref={content}><main id="main" className={className}>{children}</main>{footer}</div><noscript><style>{`.route-content[data-page-entering] .hero-content :is(.eyebrow,h1,h2,.hero-intro,.button-row),.route-content[data-page-entering] :is(.hero-meta,.hero-index){opacity:1;transform:none}.header{animation:none}`}</style></noscript></div>;
 }

@@ -2176,10 +2176,16 @@ html[dir="rtl"] .route-hero-title { line-height: 1.5; letter-spacing: 0; }
 @media (prefers-reduced-motion: reduce) {
   .header::before { transition: none; }
 }
-.route-content[data-home-arriving] .hero-content { opacity: 0; transform: translateY(4px); }
-@media (prefers-reduced-motion: reduce) {
-  .route-content[data-home-arriving] .hero-content { opacity: 1; transform: none; }
+.hero-photo { background-size: cover; background-position: 50% 54%; }
+@media (max-width: 640px) { .hero-photo { background-position: 58% 50%; } }
+@keyframes navbar-entrance {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: none; }
 }
-@media (min-width: 1101px) and (prefers-reduced-motion: no-preference) {
-  .route-content[data-desktop-arriving] .hero-content { opacity: 0; transform: translateY(5px); }
+@media (prefers-reduced-motion: no-preference) {
+  .header { animation: navbar-entrance 620ms cubic-bezier(0.22,1,0.36,1) both; }
+  .route-content[data-page-entering] .hero-content :is(.eyebrow,h1,h2,.hero-intro,.button-row),
+  .route-content[data-page-entering] :is(.hero-meta,.hero-index) { opacity: 0; transform: translateY(16px); }
 }
+.header .desktop-nav a { transition: color 230ms ease, background-color 230ms ease; }
+.header .desktop-nav a.active:hover { background-color: transparent; }

@@ -276,7 +276,7 @@ export default async function Page({ params }: Props) {
       <NavigationTransition footer={<Footer locale={l} />} routeKey={`/${l}/${path.join("/")}`} className={heroImage ? "inner-page has-route-hero" : path.length ? "inner-page" : ""}>
         {heroImage && (
           <section className="hero route-hero" aria-label={heroTitle}>
-            <div className="hero-photo">
+            <div className="hero-photo" style={{backgroundImage: `url("${heroImage}")`}}>
               <Image key={heroImage} src={heroImage} alt={heroTitle} fill priority unoptimized sizes="100vw" quality={90} placeholder={heroPreviews[heroImage as keyof typeof heroPreviews] as `data:image/${string}`} />
             </div>
             <div className="hero-shade" />
